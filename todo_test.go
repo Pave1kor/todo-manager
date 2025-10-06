@@ -1,6 +1,7 @@
 package todo_test
 
 import (
+	"os"
 	"testing"
 	todo "todomanager"
 )
@@ -27,5 +28,51 @@ func TestCompleted(t *testing.T) {
 	l.CompletedAt(1)
 	if !l[0].Done {
 		t.Error("New task should be completed")
+	}
+}
+
+func TestDelete(t *testing.T) {
+	l := todo.List{}
+	task := []string{
+		"Task1",
+		"Task2",
+		"Task3",
+	}
+	for _, v := range task {
+		l.Add(v)
+	}
+	if l[0].Task != task[0] {
+		t.Errorf("Expected %q, got %q instead", task[0], l[0].Task)
+	}
+	l.Delete(2)
+	if len(l) != 2 {
+		t.Errorf("Expected list length %d, got %d instead", 2, len(l))
+	}
+	if l[1].Task != task[2] {
+		t.Errorf("Expected %q, got %q instead", task[2], l[1].Task)
+	}
+}
+
+func TestSaveGet(t *testing.T) {
+	l1 := todo.List{}
+	l2 := todo.List{}
+	taskName := "New Task"
+	l1.Add(taskName)
+	if l1[0].Task != taskName {
+		t.Errorf("Expected %q, got %q instead", taskName, l1[0].Task)
+	}
+	tf, err := os.CreateTemp("", "")
+	if err != nil {
+		t.Fatalf("Error creating temp file:%s", err)
+	}
+	defer os.Remove(tf.Name())
+	if err := l1.Save(tf.Name()); err != nil {
+		t.Errorf("Saving list to file %s", err)
+	}
+	if err := l2.Get(tf.Name()); err != nil {
+		t.Errorf("Error getting list from file %q", err)
+	}
+	if l1[0].Task != l2[0].Task {
+		t.Errorf("Task %q should mach task %q", l1[0].Task, l2[0].Task)
 	}
 }
