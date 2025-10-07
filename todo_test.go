@@ -25,7 +25,7 @@ func TestCompleted(t *testing.T) {
 	if l[0].Done {
 		t.Error("New task should not be completed")
 	}
-	l.CompletedAt(1)
+	l.Complete(1)
 	if !l[0].Done {
 		t.Error("New task should be completed")
 	}

@@ -27,9 +27,10 @@ func (l *List) Add(taskName string) {
 
 	*l = append(*l, t)
 }
-func (l *List) CompletedAt(i int) error {
+
+func (l *List) Complete(i int) error {
 	ls := *l
-	if i <= 0 || i >= len(ls) {
+	if i <= 0 || i > len(ls) {
 		return fmt.Errorf("Items %d does not exist", i)
 	}
 	ls[i-1].Done = true
@@ -39,10 +40,10 @@ func (l *List) CompletedAt(i int) error {
 
 func (l *List) Delete(i int) error {
 	ls := *l
-	if i <= 0 || i >= len(ls) {
+	if i <= 0 || i > len(ls) {
 		return fmt.Errorf("Items %d does not exist", i)
 	}
-	ls = append(ls[:i-1], ls[i:]...)
+	*l = append(ls[:i-1], ls[i:]...)
 	return nil
 }
 func (l *List) Save(filename string) error {
@@ -56,7 +57,7 @@ func (l *List) Save(filename string) error {
 func (l *List) Get(filename string) error {
 	file, err := os.ReadFile(filename)
 	if err != nil {
-		if errors.Is(os.ErrNotExist, err) {
+		if errors.Is(err, os.ErrNotExist) {
 			return nil
 		}
 		return err
