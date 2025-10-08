@@ -1,37 +1,54 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"strings"
 	todo "todomanager"
 )
 
 const todoFileName = ".todo.json"
 
 func main() {
+	task := flag.String("task", "", "task to be include in the ToDo list")
+	list := flag.Bool("list", false, "List all tasks")
+	complete := flag.Int("complete", 0, "Item to be completed")
+	flag.Parse()
+
 	l := &todo.List{}
 
 	if err := l.Get(todoFileName); err != nil {
-		// if !os.IsNotExist(err) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
-		// }
 	}
 
 	switch {
-	case len(os.Args) == 1:
+	case *list:
 		for _, item := range *l {
-			fmt.Print(item.Task)
+			if !item.Done {
+				fmt.Println(item.Task)
+			}
 		}
-	default:
-		item := strings.Join(os.Args[1:], " ")
-		l.Add(item)
-
+	case *complete > 0:
+		//Complete the given item
+		if err := l.Complete(*complete); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		//Save the new list
+		if err := l.Save(todoFileName); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	case *task != "":
+		l.Add(*task)
 		if err := l.Save(todoFileName); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 
+	default:
+		fmt.Fprintln(os.Stderr, "Invalid options")
+		os.Exit(1)
 	}
 }
