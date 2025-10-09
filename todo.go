@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+type Stringer interface {
+	String() string
+}
+
 type item struct {
 	Task        string
 	Done        bool
@@ -17,6 +21,20 @@ type item struct {
 
 type List []item
 
+// view tasks list in stdout
+func (l *List) String() string {
+	formatted := ""
+	for k, t := range *l {
+		prefix := " "
+		if t.Done {
+			prefix = "X"
+		}
+		formatted += fmt.Sprintf("%s %d: %s\n", prefix, k+1, t.Task)
+	}
+	return formatted
+}
+
+// add new tasks
 func (l *List) Add(taskName string) {
 	t := item{
 		Task:        taskName,
@@ -28,6 +46,7 @@ func (l *List) Add(taskName string) {
 	*l = append(*l, t)
 }
 
+// Mark about tasks todo
 func (l *List) Complete(i int) error {
 	ls := *l
 	if i <= 0 || i > len(ls) {
@@ -38,6 +57,7 @@ func (l *List) Complete(i int) error {
 	return nil
 }
 
+// delete tasks with key i
 func (l *List) Delete(i int) error {
 	ls := *l
 	if i <= 0 || i > len(ls) {
@@ -46,6 +66,8 @@ func (l *List) Delete(i int) error {
 	*l = append(ls[:i-1], ls[i:]...)
 	return nil
 }
+
+// save list tasks in file
 func (l *List) Save(filename string) error {
 	js, err := json.Marshal(l)
 	if err != nil {
@@ -54,6 +76,7 @@ func (l *List) Save(filename string) error {
 	return os.WriteFile(filename, js, 0644)
 }
 
+// get list task from file
 func (l *List) Get(filename string) error {
 	file, err := os.ReadFile(filename)
 	if err != nil {
