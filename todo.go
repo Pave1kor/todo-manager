@@ -34,6 +34,27 @@ func (l *List) String() string {
 	return formatted
 }
 
+// view information about data of task
+func (l *List) DataTask(numberTask int) error {
+	if numberTask > len(*l) {
+		return fmt.Errorf("Task with %q number don`t exist", numberTask)
+	}
+	for number, task := range *l {
+		if numberTask == number {
+			fmt.Printf("Tasks: %q\n", task.Task)
+			y, m, d := task.CreatedAt.Date()
+			fmt.Printf("Data created: %d:%d:%d\n", d, m, y)
+			if task.Done {
+				y, m, d := task.CompletedAt.Date()
+				fmt.Printf("Data completed: %d:%d:%d\n", d, m, y)
+			} else {
+				fmt.Printf("Item don`t completed!")
+			}
+		}
+	}
+	return nil
+}
+
 // add new tasks
 func (l *List) Add(taskName string) {
 	t := item{
@@ -89,4 +110,20 @@ func (l *List) Get(filename string) error {
 		return nil
 	}
 	return json.Unmarshal(file, l)
+}
+
+func (l *List) CompleteTasks() error {
+	formatted := ""
+	count := 1
+	for _, tasks := range *l {
+		if tasks.Done {
+			formatted += fmt.Sprintf("%d: %s\n", count, tasks.Task)
+			count++
+		}
+	}
+	if len(formatted) == 0 {
+		return fmt.Errorf("Don`t exists completed items")
+	}
+	fmt.Print(formatted)
+	return nil
 }

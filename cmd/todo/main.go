@@ -26,6 +26,9 @@ func main() {
 	add := flag.Bool("add", false, "Add task to the ToDo list")
 	list := flag.Bool("list", false, "List all tasks")
 	complete := flag.Int("complete", 0, "Item to be completed")
+	delete := flag.Int("delete", 0, "Delete item")
+	date := flag.Int("date", 0, "Information of item  data")
+	cList := flag.Bool("cLists", false, "List of complete item")
 	flag.Parse()
 
 	//set namefile
@@ -46,6 +49,12 @@ func main() {
 	case *list:
 		//tasks list
 		fmt.Print(l)
+	case *cList:
+		//list of complete tasks
+		if err := l.CompleteTasks(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	case *complete > 0:
 		//complete the given item
 		if err := l.Complete(*complete); err != nil {
@@ -71,7 +80,23 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-
+	case *delete > 0:
+		//Delete tasks
+		if err := l.Delete(*delete); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		//save list
+		if err := l.Save(todoFileName); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	case *date > 0:
+		//view data of task
+		if err := l.DataTask(*date); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	default:
 		//invalid option
 		fmt.Fprintln(os.Stderr, "Invalid options")
